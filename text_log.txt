@@ -1,0 +1,11 @@
+
+=======================================
+0: Source: moray ( ; or `` '' ; ; ) is one of the 32 local government council areas of scotland . it lies in the north-east of the country , with coastline on the moray firth , and borders the council areas of aberdeenshire and highland.between 1975 and 1996 moray , with similar boundaries , was a district of the then grampian region .
+   Target: moray is a council area in scotland , uk .
+   ['moray', 'is', 'one of the 32 local government council areas of scotland']
+   ['borders the council areas of highland.between 1975 , with similar boundaries', 'was', 'a district of the then grampian region']
+   ['moray', 'is', 'a council area in scotland']
+
+=======================================
+1: Source: wolfgang schreyer ( 20 november 1927 – 14 november 2017 ) was a german writer of fiction , historic adventures mixed with documentary , science fiction for tv shows and movies and is best known as the author of over 20 adventure stories .
+   Target: wolfgang schreyer ( 20 november 1927 – 14 november 2017 ) was an ( east ) german writer of fiction , historic adventures mixed with documentary , science fiction for tv shows and movies . he was born in magdeburg , germany.during the last years of the war he was a member of the nsdap ( 1944 – 1945 ) .he was best known as the author of over 20 adventure stories . in 1956 schreyer was awarded the heinrich-mann-preis . from 1974 until his death , he was a member of pen international . he was very successful in east germany.schreyer died on 14 november 2017 in ahrenshoop , germany at the age of 89 .
