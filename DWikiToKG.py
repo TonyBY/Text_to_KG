@@ -89,14 +89,23 @@ def get_data_dict(src_file, tgt_file, cache_file):
     for i in tqdm(range(len(data_dict['source_kg']), len(src_lines), 1)):
     # for i in tqdm(range(len(data_dict['source_kg']), 6, 1)):
         FAILED = False
-        logger.debug("\n============== i: {i}=========================")
+        logger.debug(f"\n============== i: {i}=========================")
         logger.debug(f"{i}: Source: {src_lines[i]}\n   Target: {tgt_lines[i]}")
         src_doc_sents = nltk.sent_tokenize(src_lines[i])
         src_doc_trips = []
         for sent in src_doc_sents:
-            trip = get_best_triplet_of_sentence(sent)
+            trip, FAILED = get_best_triplet_of_sentence(sent)
+            if FAILED:
+                break
             src_doc_trips.append(trip)
             logger.debug(f"   {trip}")
+        
+        if FAILED:
+            data_dict['source_kg'].append([])
+            data_dict['target_kg'].append([])
+            data_dict['source_doc'].append([])
+            data_dict['target_doc'].append([])
+            continue
             
         tgt_doc_sents = nltk.sent_tokenize(tgt_lines[i])
         tgt_doc_trips = []
