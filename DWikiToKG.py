@@ -147,5 +147,6 @@ if __name__ == "__main__":
 
     data_df = pd.DataFrame.from_dict(data_dict)
     cleaned_df = drop_empty_rows_by_column(data_df, 'source_kg')
+    cleaned_df = drop_empty_rows_by_column(cleaned_df, 'target_kg')
 
     cleaned_df.to_csv(args.output_file, index=False)
