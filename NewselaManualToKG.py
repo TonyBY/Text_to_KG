@@ -12,16 +12,10 @@ from utils import read_json, save_json, logger, init_logger, drop_empty_rows_by_
 import argparse
 
 def define_args(parser):
-    parser.add_argument('--src-file', 
+    parser.add_argument('--tsv-file', 
                         type=str, 
-                        default='../data/Document-level-text-simplification/Dataset/test.src', 
-                        help='Source doc path.')
-
-    parser.add_argument('--tgt-file', 
-                        type=str, 
-                        default='../data/Document-level-text-simplification/Dataset/test.tgt', 
-                        help='Target doc path.')
-
+                        default='../data/Newsela/newsela-auto/newsela-manual/crowdsourced/dev.tsv', 
+                        help='CRF aligned Newsela tsv file path.')
 
     parser.add_argument('--output-file', 
                         type=str, 
@@ -43,15 +37,7 @@ def define_args(parser):
                         default=8000, 
                         help='OpenIE server port.')
 
-def ReadInFile(filename):
-    with open(filename) as f:
-        lines = f.readlines()
-
-        lines = [x.strip() for x in lines]
-
-    return lines
-
-def get_best_triplet_of_sentence(sent):
+def get_best_triplet_of_sentence(sent, extractor):
     try:
         extractions = extractor.extract(sent)
     except Exception as e:
@@ -74,16 +60,13 @@ def get_best_triplet_of_sentence(sent):
         logger.error(f"extractions: {extractions}")
         return [], True
 
-def get_data_dict(src_file, tgt_file, cache_file):
+def get_data_dict(src_lines, tgt_lines, cache_file, extractor):
 
     if os.path.exists(cache_file):
         data_dict = read_json(cache_file)
         logger.info(f"Loading {len(data_dict['source_kg'])} examples from cached data_dict.")
     else:
         data_dict = {'source_kg': [], 'source_doc': [], 'target_doc': [], 'target_kg': []}
-
-    src_lines = ReadInFile(src_file)
-    tgt_lines = ReadInFile(tgt_file)
 
     assert(len(src_lines) == len(tgt_lines))
     
@@ -95,7 +78,7 @@ def get_data_dict(src_file, tgt_file, cache_file):
         src_doc_sents = nltk.sent_tokenize(src_lines[i])
         src_doc_trips = []
         for sent in src_doc_sents:
-            trip, FAILED = get_best_triplet_of_sentence(sent)
+            trip, FAILED = get_best_triplet_of_sentence(sent, extractor)
             if FAILED:
                 break
             src_doc_trips.append(trip)
@@ -107,11 +90,15 @@ def get_data_dict(src_file, tgt_file, cache_file):
             data_dict['source_doc'].append([])
             data_dict['target_doc'].append([])
             continue
-            
-        tgt_doc_sents = nltk.sent_tokenize(tgt_lines[i])
+        
+        try:
+            tgt_doc_sents = nltk.sent_tokenize(tgt_lines[i])
+        except:
+            FAILED = True
+            logger.info(f"tgt_lines[i]: {tgt_lines[i]}")
         tgt_doc_trips = []
         for sent in tgt_doc_sents:
-            trip, FAILED = get_best_triplet_of_sentence(sent)
+            trip, FAILED = get_best_triplet_of_sentence(sent, extractor)
             if FAILED:
                 break
             tgt_doc_trips.append(trip)
@@ -141,10 +128,20 @@ if __name__ == "__main__":
 
     extractor = OpenIE5(f'http://localhost:{args.server_port}')
 
-    src_file = args.src_file
-    tgt_file = args.tgt_file
+    tsv_file = args.tsv_file
 
-    data_dict = get_data_dict(src_file, tgt_file, args.cache_file)
+    headers=["align_type", "sentence1_idx", "sentence2_idx", "sentence1", 'sentence2']
+
+    df= pd.read_csv(tsv_file, sep='\t', on_bad_lines='skip', names=headers)
+    df = df.iloc[df.index[df.align_type=='aligned']]
+    df = df.reset_index()
+
+    source_sents = list(df.sentence1)
+    target_sents = list(df.sentence2)
+
+    assert len(source_sents) == len(target_sents)
+
+    data_dict = get_data_dict(source_sents, target_sents, args.cache_file, extractor)
 
     data_df = pd.DataFrame.from_dict(data_dict)
     cleaned_df = drop_empty_rows_by_column(data_df, 'source_kg')

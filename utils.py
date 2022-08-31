@@ -61,3 +61,10 @@ def drop_empty_rows_by_column(df, column):
             index_to_drop.append(index)
     df = df.drop(index=index_to_drop, inplace=False)
     return df
+
+def merge_dfs(output_batch_csv_template, number_of_df_batches):
+    output_df_batches = []
+    for i in range(0, number_of_df_batches):
+        output_df_batche = pd.read_csv(output_batch_csv_template.replace('$BATCH_NUMBER', str(i)))
+        output_df_batches.append(output_df_batche)
+    return output_df_batches
